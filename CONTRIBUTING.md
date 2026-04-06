@@ -52,9 +52,28 @@ When you're ready to start working on an issue, follow these steps:
 # Install dependencies
 dbt deps
 
+# Set up pre-commit hooks
+pip install pre-commit
+pre-commit install
+
 # Run models
 dbt run --select tag:llm_evals
+```
 
+### Pre-commit Hooks
+
+This project uses [pre-commit](https://pre-commit.com/) to enforce code quality. Hooks run automatically on `git commit` and include:
+
+- **Trailing whitespace & EOF fixes** — consistent file formatting
+- **YAML validation** — catches syntax errors in dbt YAML configs
+- **SQLFluff** — SQL linting with dbt-aware templating
+- **Ruff** — fast Python linting and formatting
+- **yamlfmt** — YAML formatting consistency
+
+To run hooks manually against all files:
+
+```bash
+pre-commit run --all-files
 ```
 
 ### Running Tests

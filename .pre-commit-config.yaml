@@ -1,0 +1,43 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+repos:
+  # General file checks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+        exclude: '\.lock$'
+      - id: end-of-file-fixer
+        exclude: '\.lock$'
+      - id: check-yaml
+        args: ['--unsafe']  # Required for dbt Jinja-templated YAML
+      - id: check-added-large-files
+        args: ['--maxkb=500']
+      - id: check-merge-conflict
+      - id: detect-private-key
+
+  # SQL linting with SQLFluff (dbt-aware)
+  - repo: https://github.com/sqlfluff/sqlfluff
+    rev: 3.3.1
+    hooks:
+      - id: sqlfluff-lint
+        name: sqlfluff-lint
+        files: '(models|macros|tests|analyses|integration_tests)/.*\.sql$'
+        additional_dependencies:
+          - sqlfluff-templater-dbt
+
+  # Python linting with Ruff
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.9.7
+    hooks:
+      - id: ruff
+        args: ['--fix']
+      - id: ruff-format
+
+  # YAML formatting
+  - repo: https://github.com/google/yamlfmt
+    rev: v0.16.0
+    hooks:
+      - id: yamlfmt
+        files: '\.(yml|yaml)$'
+        exclude: '(dbt_packages|target|logs|\.lock)/'

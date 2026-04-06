@@ -68,6 +68,9 @@ venv.bak/
 *.swp
 *.swo
 
+# Pre-commit
+.pre-commit-cache/
+
 # OS
 .DS_Store
 .DS_Store?
