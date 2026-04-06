@@ -114,18 +114,46 @@ dbt parse
 - Add inline documentation for complex logic
 - Update schema YAML files
 
+### Commit Messages
+
+This project uses [Conventional Commits](https://www.conventionalcommits.org/) to automate changelog generation and semantic versioning. Please format your commit messages as:
+
+```
+<type>: <description>
+
+[optional body]
+```
+
+**Types:**
+- `feat:` — new feature (bumps minor version)
+- `fix:` — bug fix (bumps patch version)
+- `docs:` — documentation changes
+- `chore:` — maintenance tasks
+- `refactor:` — code restructuring without behavior change
+- `test:` — adding or updating tests
+
+**Examples:**
+```bash
+git commit -m "feat: add support for custom evaluation criteria"
+git commit -m "fix: handle null baseline_version in capture macro"
+git commit -m "docs: add BigQuery troubleshooting guide"
+```
+
+A breaking change adds `!` after the type (e.g., `feat!: redesign capture API`) and bumps the major version.
+
 ### Pull Request Process
 
 When you're ready to submit your changes:
 
-1. Make your changes and commit them: `git commit -m 'Add some feature'`
+1. Make your changes and commit using conventional commit format
 2. Push to the branch: `git push origin feature/my-feature-branch`
 3. Open a pull request
 4. Update documentation if needed
-5. Update CHANGELOG.md with your changes
-6. Ensure all tests pass
-7. Submit PR with clear description of changes
-8. Reference any related issues
+5. Ensure all tests pass (CI runs automatically)
+6. Submit PR with clear description of changes
+7. Reference any related issues
+
+> **Note:** CHANGELOG.md is generated automatically from conventional commits. You do not need to update it manually.
 
 After creating the pull request, the PR will automatically notify the
 maintainers, and they will be able to review your changes.
