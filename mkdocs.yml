@@ -1,0 +1,79 @@
+site_name: dbt-llm-evals
+site_url: https://paradime-io.github.io/dbt-llm-evals/
+site_description: Evaluate LLM outputs directly in your data warehouse using dbt
+repo_url: https://github.com/paradime-io/dbt-llm-evals
+repo_name: paradime-io/dbt-llm-evals
+edit_uri: edit/main/docs_site/
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: deep purple
+      accent: amber
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: deep purple
+      accent: amber
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.instant
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.tabs.link
+  icon:
+    repo: fontawesome/brands/github
+
+docs_dir: docs_site
+
+plugins:
+  - search
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - Getting Started:
+      - Quick Start: getting-started/quickstart.md
+      - Installation: getting-started/installation.md
+      - Configuration: getting-started/configuration.md
+  - Concepts:
+      - How It Works: concepts/how-it-works.md
+      - Architecture: concepts/architecture.md
+      - Evaluation Criteria: concepts/evaluation-criteria.md
+  - Warehouse Setup:
+      - Snowflake Cortex: warehouses/snowflake.md
+      - BigQuery Vertex AI: warehouses/bigquery.md
+      - Databricks AI: warehouses/databricks.md
+  - Use Cases:
+      - Customer Support QA: use-cases/customer-support.md
+      - Content Generation: use-cases/content-generation.md
+      - Data Enrichment: use-cases/data-enrichment.md
+  - Reference:
+      - Models: reference/models.md
+      - Macros: reference/macros.md
+      - Variables: reference/variables.md
+  - Contributing: contributing.md
