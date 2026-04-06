@@ -21,13 +21,14 @@ with captures as (
     limit {{ var('llm_evals_batch_size', 1000) }}
 ),
 
--- Get baseline examples for consistency checks
+-- Get baseline examples for consistency checks (grouped by source_model and output_field)
 baselines as (
     select
         source_model,
+        output_field,
         {% if target.type == 'snowflake' %}
         listagg(
-            'Input: ' || cast(baseline_input as string) || 
+            'Input: ' || cast(baseline_input as string) ||
             '\nOutput: ' || cast(baseline_output as string),
             '\n---\n'
         ) within group (order by baseline_created_at) as baseline_examples
@@ -53,7 +54,7 @@ baselines as (
         {% endif %}
     from {{ ref('llm_evals__baselines') }}
     where is_active = true
-    group by source_model
+    group by source_model, output_field
 ),
 
 -- Cross join with eval criteria
@@ -61,6 +62,7 @@ eval_tasks as (
     select
         c.capture_id,
         c.source_model,
+        c.output_field,
         c.input_data,
         c.output_data,
         c.prompt_data,
@@ -78,12 +80,18 @@ eval_tasks as (
     cross join lateral flatten(
         input => parse_json('{{ var("llm_evals_criteria", '["accuracy", "relevance"]') }}')
     ) criteria
-    left join baselines b on c.source_model = b.source_model
+    left join baselines b
+        on c.source_model = b.source_model
+        and coalesce(c.output_field, '') = coalesce(b.output_field, '')
     {% elif target.type == 'bigquery' %}
     cross join unnest({{ var("llm_evals_criteria", '["accuracy", "relevance"]') }}) as criteria
-    left join baselines b on c.source_model = b.source_model
+    left join baselines b
+        on c.source_model = b.source_model
+        and coalesce(c.output_field, '') = coalesce(b.output_field, '')
     {% elif target.type == 'databricks' %}
-    left join baselines b on c.source_model = b.source_model
+    left join baselines b
+        on c.source_model = b.source_model
+        and coalesce(c.output_field, '') = coalesce(b.output_field, '')
     lateral view explode(from_json('{{ var("llm_evals_criteria", '["accuracy", "relevance"]') }}', 'array<string>')) as criteria
     {% endif %}
 ),
@@ -93,6 +101,7 @@ judge_prompts as (
     select
         capture_id,
         source_model,
+        output_field,
         criterion,
         {{ dbt_llm_evals.build_judge_prompt(
             'input_data',
@@ -110,6 +119,7 @@ judge_responses as (
     select
         capture_id,
         source_model,
+        output_field,
         criterion,
         judge_prompt,
         
@@ -133,6 +143,7 @@ parsed_json_responses as (
     select
         capture_id,
         source_model,
+        output_field,
         criterion,
         judge_prompt,
         judge_response,
@@ -149,6 +160,7 @@ parsed_evaluations as (
     select
         capture_id,
         source_model,
+        output_field,
         criterion,
         judge_prompt,
         judge_response,
@@ -183,6 +195,7 @@ select
     {{ dbt_utils.generate_surrogate_key(['capture_id', 'criterion', 'evaluated_at']) }} as eval_id,
     capture_id,
     source_model,
+    output_field,
     criterion,
     '{{ var("llm_evals_judge_model") }}' as judge_model,
     

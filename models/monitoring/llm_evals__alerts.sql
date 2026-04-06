@@ -8,6 +8,7 @@
 with drift_alerts as (
     select
         source_model,
+        output_field,
         criterion,
         'drift_detection' as alert_type,
         drift_status as severity,
@@ -21,6 +22,7 @@ with drift_alerts as (
 performance_alerts as (
     select
         source_model,
+        output_field,
         criterion,
         'low_pass_rate' as alert_type,
         case
@@ -38,6 +40,7 @@ performance_alerts as (
 confidence_alerts as (
     select
         source_model,
+        output_field,
         criterion,
         'low_confidence' as alert_type,
         'WARNING' as severity,
@@ -52,6 +55,7 @@ confidence_alerts as (
 parse_error_alerts as (
     select
         source_model,
+        output_field,
         criterion,
         'parse_errors' as alert_type,
         case
@@ -77,8 +81,9 @@ all_alerts as (
 )
 
 select
-    {{ dbt_utils.generate_surrogate_key(['source_model', 'criterion', 'alert_type', 'alert_timestamp']) }} as alert_id,
+    {{ dbt_utils.generate_surrogate_key(['source_model', 'output_field', 'criterion', 'alert_type', 'alert_timestamp']) }} as alert_id,
     source_model,
+    output_field,
     criterion,
     alert_type,
     severity,

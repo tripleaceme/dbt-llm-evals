@@ -41,6 +41,7 @@ SELECT
     {% else %}
     'v1.0' as baseline_version,
     {% endif %}
+    coalesce(output_field, cast(null as string)) as output_field,
     baseline_input,
     baseline_output,
     baseline_created_at,

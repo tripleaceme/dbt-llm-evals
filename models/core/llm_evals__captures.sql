@@ -24,13 +24,14 @@ with raw_captures as (
 select
     c.capture_id,
     c.source_model,
+    coalesce(c.output_field, cast(null as string)) as output_field,
     c.input_data,
     c.output_data,
     coalesce(c.prompt_data, cast(null as string)) as prompt_data,
     c.captured_at,
     c.dbt_invocation_id,
-    
+
     'pending' as eval_status,
     cast(null as timestamp) as evaluated_at
-    
+
 from raw_captures c

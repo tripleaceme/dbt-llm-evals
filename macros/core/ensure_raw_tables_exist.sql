@@ -53,6 +53,7 @@
                 CREATE TABLE IF NOT EXISTS `{{ target.database }}.{{ eval_schema }}.raw_captures` (
                     capture_id STRING,
                     source_model STRING,
+                    output_field STRING,
                     input_data STRING,
                     output_data STRING,
                     prompt_data STRING,
@@ -67,6 +68,7 @@
                 CREATE TABLE IF NOT EXISTS {{ eval_schema }}.raw_captures (
                     capture_id VARCHAR,
                     source_model VARCHAR,
+                    output_field VARCHAR,
                     input_data VARIANT,
                     output_data VARCHAR,
                     prompt_data VARCHAR,
@@ -81,6 +83,7 @@
                 CREATE TABLE IF NOT EXISTS {{ target.database }}.{{ eval_schema }}.raw_captures (
                     capture_id STRING,
                     source_model STRING,
+                    output_field STRING,
                     input_data STRING,
                     output_data STRING,
                     prompt_data STRING,
@@ -95,6 +98,7 @@
                 CREATE TABLE IF NOT EXISTS {{ eval_schema }}.raw_captures (
                     capture_id VARCHAR,
                     source_model VARCHAR,
+                    output_field VARCHAR,
                     input_data VARCHAR,
                     output_data VARCHAR,
                     prompt_data VARCHAR,
@@ -153,8 +157,53 @@
                 {% do run_query(add_prompt_column) %}
                 {{ log("✓ Added prompt_data column to raw_captures table", info=true) }}
             {% endif %}
+
+            {# Check if output_field column exists and add if missing (multi-output support) #}
+            {% set check_output_field_column %}
+            {% if target.type == 'bigquery' %}
+                SELECT COUNT(*) as column_count
+                FROM `{{ target.database }}.{{ eval_schema }}`.INFORMATION_SCHEMA.COLUMNS
+                WHERE table_name = 'raw_captures'
+                  AND column_name = 'output_field'
+            {% elif target.type == 'snowflake' %}
+                SELECT COUNT(*) as column_count
+                FROM {{ database }}.INFORMATION_SCHEMA.COLUMNS
+                WHERE table_schema = '{{ eval_schema | upper }}'
+                  AND table_name = 'RAW_CAPTURES'
+                  AND column_name = 'OUTPUT_FIELD'
+            {% elif target.type == 'databricks' %}
+                SELECT COUNT(*) as column_count
+                FROM {{ target.database }}.information_schema.columns
+                WHERE table_schema = '{{ eval_schema }}'
+                  AND table_name = 'raw_captures'
+                  AND column_name = 'output_field'
+            {% else %}
+                SELECT COUNT(*) as column_count
+                FROM information_schema.columns
+                WHERE table_schema = '{{ eval_schema }}'
+                  AND table_name = 'raw_captures'
+                  AND column_name = 'output_field'
+            {% endif %}
+            {% endset %}
+
+            {% set result = run_query(check_output_field_column) %}
+            {% set output_field_exists = result.rows[0][0] > 0 if result else false %}
+
+            {% if not output_field_exists %}
+                {% set add_output_field %}
+                {% if target.type == 'bigquery' %}
+                    ALTER TABLE `{{ eval_schema }}.raw_captures`
+                    ADD COLUMN output_field STRING
+                {% else %}
+                    ALTER TABLE {{ eval_schema }}.raw_captures
+                    ADD COLUMN output_field VARCHAR
+                {% endif %}
+                {% endset %}
+                {% do run_query(add_output_field) %}
+                {{ log("✓ Added output_field column to raw_captures table", info=true) }}
+            {% endif %}
         {% endif %}
-        
+
         {# Check if raw_baselines table exists #}
         {% set check_baselines_table %}
         {% if target.type == 'bigquery' %}
@@ -190,6 +239,7 @@
                     baseline_id STRING,
                     source_model STRING,
                     baseline_version STRING DEFAULT 'v1.0',
+                    output_field STRING,
                     baseline_input STRING,
                     baseline_output STRING,
                     baseline_created_at TIMESTAMP,
@@ -203,6 +253,7 @@
                     baseline_id VARCHAR,
                     source_model VARCHAR,
                     baseline_version VARCHAR DEFAULT 'v1.0',
+                    output_field VARCHAR,
                     baseline_input VARIANT,
                     baseline_output VARCHAR,
                     baseline_created_at TIMESTAMP,
@@ -216,6 +267,7 @@
                     baseline_id STRING,
                     source_model STRING,
                     baseline_version STRING,
+                    output_field STRING,
                     baseline_input STRING,
                     baseline_output STRING,
                     baseline_created_at TIMESTAMP,
@@ -229,6 +281,7 @@
                     baseline_id VARCHAR,
                     source_model VARCHAR,
                     baseline_version VARCHAR,
+                    output_field VARCHAR,
                     baseline_input VARCHAR,
                     baseline_output VARCHAR,
                     baseline_created_at TIMESTAMP,
@@ -310,6 +363,51 @@
                     {% do run_query(update_existing) %}
                 {% endif %}
                 {{ log("✓ Added baseline_version column to raw_baselines table", info=true) }}
+            {% endif %}
+
+            {# Check if output_field column exists and add if missing (multi-output support) #}
+            {% set check_baseline_output_field %}
+            {% if target.type == 'bigquery' %}
+                SELECT COUNT(*) as column_count
+                FROM `{{ target.database }}.{{ eval_schema }}`.INFORMATION_SCHEMA.COLUMNS
+                WHERE table_name = 'raw_baselines'
+                  AND column_name = 'output_field'
+            {% elif target.type == 'snowflake' %}
+                SELECT COUNT(*) as column_count
+                FROM {{ database }}.INFORMATION_SCHEMA.COLUMNS
+                WHERE table_schema = '{{ eval_schema | upper }}'
+                  AND table_name = 'RAW_BASELINES'
+                  AND column_name = 'OUTPUT_FIELD'
+            {% elif target.type == 'databricks' %}
+                SELECT COUNT(*) as column_count
+                FROM {{ target.database }}.information_schema.columns
+                WHERE table_schema = '{{ eval_schema }}'
+                  AND table_name = 'raw_baselines'
+                  AND column_name = 'output_field'
+            {% else %}
+                SELECT COUNT(*) as column_count
+                FROM information_schema.columns
+                WHERE table_schema = '{{ eval_schema }}'
+                  AND table_name = 'raw_baselines'
+                  AND column_name = 'output_field'
+            {% endif %}
+            {% endset %}
+
+            {% set result = run_query(check_baseline_output_field) %}
+            {% set baseline_output_field_exists = result.rows[0][0] > 0 if result else false %}
+
+            {% if not baseline_output_field_exists %}
+                {% set add_baseline_output_field %}
+                {% if target.type == 'bigquery' %}
+                    ALTER TABLE `{{ eval_schema }}.raw_baselines`
+                    ADD COLUMN output_field STRING
+                {% else %}
+                    ALTER TABLE {{ eval_schema }}.raw_baselines
+                    ADD COLUMN output_field VARCHAR
+                {% endif %}
+                {% endset %}
+                {% do run_query(add_baseline_output_field) %}
+                {{ log("✓ Added output_field column to raw_baselines table", info=true) }}
             {% endif %}
         {% endif %}
     {% endif %}

@@ -16,6 +16,8 @@ models:
         description: "The dbt model that generated this AI output"
         tests:
           - not_null
+      - name: output_field
+        description: "The name of the output column being evaluated (supports multiple outputs per model)"
       - name: input_data
         description: "JSON/struct containing the input columns used to generate the output"
       - name: output_data
@@ -34,6 +36,8 @@ models:
         description: "Unique identifier for each baseline sample"
       - name: source_model
         description: "The dbt model this baseline is for"
+      - name: output_field
+        description: "The output column this baseline sample is for (supports multiple outputs per model)"
       - name: baseline_input
         description: "Sample input from baseline"
       - name: baseline_output

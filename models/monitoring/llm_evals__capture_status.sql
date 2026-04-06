@@ -24,6 +24,7 @@ evaluations as (
 select
     c.capture_id,
     c.source_model,
+    c.output_field,
     c.captured_at,
     c.dbt_invocation_id,
     

@@ -16,6 +16,7 @@ with evaluations as (
 baseline_scores as (
     select
         source_model,
+        output_field,
         criterion,
         avg(score) as baseline_avg_score,
         stddev(score) as baseline_stddev,
@@ -37,13 +38,14 @@ baseline_scores as (
     from evaluations
     where evaluated_at <= cast({{ dbt.dateadd('day', -lookback_days, dbt.current_timestamp()) }} as timestamp)
         and score is not null
-    group by 1, 2
+    group by 1, 2, 3
 ),
 
 -- Calculate recent metrics
 recent_scores as (
     select
         source_model,
+        output_field,
         criterion,
         avg(score) as recent_avg_score,
         stddev(score) as recent_stddev,
@@ -55,13 +57,14 @@ recent_scores as (
     from evaluations
     where evaluated_at >= cast({{ dbt.dateadd('day', -lookback_days, dbt.current_timestamp()) }} as timestamp)
         and score is not null
-    group by 1, 2
+    group by 1, 2, 3
 ),
 
 -- Compare baseline vs recent
 drift_analysis as (
     select
         r.source_model,
+        r.output_field,
         r.criterion,
         
         -- Baseline metrics
@@ -113,6 +116,7 @@ drift_analysis as (
     from recent_scores r
     left join baseline_scores b
         on r.source_model = b.source_model
+        and coalesce(r.output_field, '') = coalesce(b.output_field, '')
         and r.criterion = b.criterion
 )
 

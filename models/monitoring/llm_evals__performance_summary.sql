@@ -21,9 +21,10 @@ daily_metrics as (
         cast(evaluated_at as date) as eval_date,
         {% endif %}
         source_model,
+        output_field,
         criterion,
         judge_model,
-        
+
         -- Volume metrics
         count(*) as total_evaluations,
         count(distinct capture_id) as unique_captures,
@@ -65,7 +66,7 @@ daily_metrics as (
         
     from evaluations
     where score is not null
-    group by 1, 2, 3, 4
+    group by 1, 2, 3, 4, 5
 )
 
 select 

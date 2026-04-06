@@ -17,10 +17,11 @@ select
     e.eval_id,
     e.capture_id,
     c.source_model,
+    c.output_field,
     c.input_data,
     c.output_data,
     c.captured_at,
-    
+
     e.criterion,
     e.judge_model,
     e.score,
